@@ -1,164 +1,104 @@
-import { useCallback, type FC, useRef, useEffect } from 'react'
-import { IHighlight, NewHighlight, PdfHighlighter, PdfLoader } from 'react-pdf-highlighter'
-import { v4 as uuidV4 } from 'uuid'
-import { Tip, Highlight, Popup, AreaHighlight } from 'react-pdf-highlighter'
-import { Retool } from '@tryretool/custom-component-support'
-import { isLeft } from 'fp-ts/lib/Either'
-import * as t from 'io-ts'
+import { useRef, useEffect, useState } from 'react';
+import { Retool } from '@tryretool/custom-component-support';
+import * as pdfjsLib from 'pdfjs-dist';
+import 'pdfjs-dist/build/pdf.worker.entry';
 
-const HighlightPopup = ({ comment }: { comment: { text: string; emoji: string } }) =>
-  comment.text ? (
-    <div className="Highlight__popup">
-      {comment.emoji} {comment.text}
-    </div>
-  ) : null
+export const ReactPdfHighlighter = () => {
+  type Highlight = {
+    bbox: [number, number, number, number] | null;
+    color: [number, number, number];
+    page: number;
+  };
 
-export const ReactPdfHighlighter: FC = () => {
-  const [pdfUrl] = Retool.useStateString({ name: 'pdfUrl' })
-  const [highlightsUnparsed, setHighlights] = Retool.useStateArray({ name: 'highlights', inspector: 'hidden' })
+  const [pdfBase64] = Retool.useStateString({ name: 'pdfBase64' });
+  const [highlightsUnparsed] = Retool.useStateArray({ name: 'highlights' });
+  const highlights: Highlight[] = highlightsUnparsed as Highlight[];
+  const [pageCount, setPageCount] = useState(0);
 
-  Retool.useComponentSettings({
-    defaultHeight: 30,
-    defaultWidth: 5,
-  })
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const validation = highlightCodecs.decode(highlightsUnparsed)
-
-  // If we can't decode the highlights state, then we just set there to be no highlights.
-  // If we wanted, we could display an error instead.
-  const highlights = isLeft(validation) ? new Array<IHighlight>() : validation.right
-
-  const onHighlightsChanged = Retool.useEventCallback({ name: 'highlightsChanged' })
-
-  const highlightsRef = useRef(highlights)
-
-  // Update highlightsRef when highlights change
-  // This is needed because the callback passed to PdfHighlighter
-  // is a closure and won't be updated when the highlights state changes
   useEffect(() => {
-    highlightsRef.current = highlights
-  }, [highlights])
+    const renderPdfWithHighlights = async () => {
+      const pdfData = atob(pdfBase64);
+      const loadingTask = pdfjsLib.getDocument({ data: pdfData });
+      const pdf = await loadingTask.promise;
 
-  const addHighlight = useCallback(
-    (highlight: NewHighlight) => {
-      const newHighlights = [...highlightsRef.current, { ...highlight, id: uuidV4() }]
-      setHighlights(newHighlights)
-      onHighlightsChanged()
-    },
-    [onHighlightsChanged, setHighlights],
-  )
+      setPageCount(pdf.numPages); // Устанавливаем количество страниц
 
-  const updateHighlight = (highlightId: string, position: Object, content: Object) => {
-    console.log('Updating highlight', highlightId, position, content)
-    const newHighlights = highlights.map((h) => {
-      const { id, position: originalPosition, content: originalContent, ...rest } = h
-      return id === highlightId
-        ? {
-            id,
-            position: { ...originalPosition, ...position },
-            content: { ...originalContent, ...content },
-            ...rest,
-          }
-        : h
-    })
-    setHighlights(newHighlights)
+      if (!containerRef.current) return;
 
-    onHighlightsChanged()
-  }
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 1.5 });
+
+        // Создаем canvas для каждой страницы
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        if (!context) {
+          console.error(`Canvas context is null for page ${i}.`);
+          continue;
+        }
+
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        canvas.style.marginBottom = '16px'; // Отступ между страницами
+        canvas.style.display = 'block'; // Устанавливаем display block для центрирования
+        canvas.style.margin = '0 auto'; // Центрируем канвас по горизонтали
+        containerRef.current.appendChild(canvas);
+
+        const renderContext = {
+          canvasContext: context,
+          viewport: viewport,
+        };
+
+        // Рендеринг страницы
+        await page.render(renderContext).promise;
+
+        // Добавление подсветки
+        highlights
+          .filter((highlight) => highlight.page === i) // Фильтруем подсветки для текущей страницы
+          .forEach(({ bbox, color }) => {
+            if (!bbox) return;
+
+            const [x1, y1, x2, y2] = bbox;
+            const highlightColor = `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.5)`;
+
+            context.fillStyle = highlightColor;
+            context.fillRect(
+              x1 * (viewport.width / 100),
+              viewport.height - y2 * (viewport.height / 100), // Flip Y coordinate
+              (x2 - x1) * (viewport.width / 100),
+              (y2 - y1) * (viewport.height / 100)
+            );
+          });
+      }
+    };
+
+    // Очищаем контейнер перед рендерингом
+    if (containerRef.current) {
+      containerRef.current.innerHTML = '';
+    }
+
+    renderPdfWithHighlights();
+  }, [pdfBase64, highlights]);
 
   return (
-    <div style={{ height: '100%', width: '100%' }}>
-      <PdfLoader url={pdfUrl} beforeLoad={<div>Loading...</div>}>
-        {(pdfDocument) => (
-          <PdfHighlighter
-            pdfDocument={pdfDocument}
-            enableAreaSelection={(event) => event.altKey}
-            onScrollChange={() => {
-              console.log('Scrolling to ')
-            }}
-            scrollRef={(scrollTo) => {
-              console.log('Scrolling to ', scrollTo)
-            }}
-            onSelectionFinished={(position, content, hideTipAndSelection, transformSelection) => (
-              <Tip
-                onOpen={transformSelection}
-                onConfirm={(comment) => {
-                  addHighlight({ content, position, comment })
-                  hideTipAndSelection()
-                }}
-              />
-            )}
-            highlightTransform={(highlight, index, setTip, hideTip, viewportToScaled, screenshot, isScrolledTo) => {
-              const isTextHighlight = !Boolean(highlight.content && highlight.content.image)
-
-              const component = isTextHighlight ? (
-                <Highlight isScrolledTo={isScrolledTo} position={highlight.position} comment={highlight.comment} />
-              ) : (
-                <AreaHighlight
-                  isScrolledTo={isScrolledTo}
-                  highlight={highlight}
-                  onChange={(boundingRect) => {
-                    updateHighlight(
-                      highlight.id,
-                      { boundingRect: viewportToScaled(boundingRect) },
-                      { image: screenshot(boundingRect) },
-                    )
-                  }}
-                />
-              )
-
-              return (
-                <Popup
-                  popupContent={<HighlightPopup {...highlight} />}
-                  onMouseOver={(popupContent) => setTip(highlight, (highlight) => popupContent)}
-                  onMouseOut={hideTip}
-                  key={index}
-                  children={component}
-                />
-              )
-            }}
-            highlights={highlights}
-          />
-        )}
-      </PdfLoader>
+    <div
+      ref={containerRef}
+      style={{
+        width: '100%',
+        height: '100vh',
+        overflowY: 'auto',
+        position: 'relative',
+        border: '1px solid black',
+        padding: '8px',
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+      }}
+    >
+      {/* Страницы будут рендериться сюда */}
     </div>
-  )
-}
-
-const scaledType = t.intersection([
-  t.type({
-    x1: t.number,
-    y1: t.number,
-    x2: t.number,
-    y2: t.number,
-    width: t.number,
-    height: t.number,
-  }),
-  t.partial({
-    pageNumber: t.number,
-  }),
-])
-
-const highlightCodecs = t.array(
-  t.type({
-    id: t.string,
-    position: t.intersection([
-      t.type({
-        boundingRect: scaledType,
-        rects: t.array(scaledType),
-        pageNumber: t.number,
-      }),
-      t.partial({
-        usePdfCoordinates: t.boolean,
-      }),
-    ]),
-    content: t.partial({
-      text: t.string,
-      image: t.string,
-    }),
-    comment: t.type({
-      text: t.string,
-      emoji: t.string,
-    }),
-  }),
-)
+  );
+};

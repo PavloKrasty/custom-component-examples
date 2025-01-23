@@ -1,15 +1,12 @@
 {
-  "customComponentSupportVersion": "1",
+  "customComponentSupportVersion": "2",
   "components": {
     "AgGrid": {
       "name": "Ag Grid",
       "model": [
         {
           "name": "rowData",
-          "label": "Row Data",
-          "type": "array",
-          "hidden": false,
-          "defaultValue": [
+          "initialValue": [
             {
               "make": "Toyota",
               "model": "Celica",
@@ -26,14 +23,11 @@
               "price": 72000
             }
           ],
-          "description": null
+          "type": "array"
         },
         {
           "name": "columnDefs",
-          "label": "Column Defs",
-          "type": "array",
-          "hidden": false,
-          "defaultValue": [
+          "initialValue": [
             {
               "headerName": "Make",
               "field": "make"
@@ -47,41 +41,30 @@
               "field": "price"
             }
           ],
-          "description": null
+          "type": "array"
         },
         {
           "name": "selectedData",
-          "label": "Selected Data",
-          "type": "string",
-          "hidden": false,
-          "defaultValue": null,
-          "description": null
+          "inspector": "hidden",
+          "type": "string"
         }
       ],
       "events": [
         "cellClicked"
       ],
-      "defaultHeight": 40,
-      "defaultWidth": 4
+      "defaultHeight": 30,
+      "defaultWidth": 5
     },
     "MaterialInput": {
       "name": "Material Input",
       "model": [
         {
           "name": "value",
-          "label": "Value",
-          "type": "string",
-          "hidden": false,
-          "defaultValue": null,
-          "description": null
+          "type": "string"
         },
         {
           "name": "placeholder",
-          "label": "Placeholder",
-          "type": "string",
-          "hidden": false,
-          "defaultValue": null,
-          "description": null
+          "type": "string"
         }
       ],
       "events": [],
@@ -93,132 +76,65 @@
       "model": [
         {
           "name": "data",
-          "label": "Data",
-          "type": "array",
-          "hidden": false,
-          "defaultValue": [
+          "initialValue": [
             {
-              "key": "EMP001",
-              "value": "Alice Johnson",
+              "value": "nodeOne",
+              "key": "nodeOne",
               "children": [
                 {
-                  "key": "EMP002",
-                  "value": "Bob Smith",
-                  "children": [
-                    {
-                      "key": "EMP003",
-                      "value": "Charlie Williams",
-                      "children": [
-                        {
-                          "key": "EMP004",
-                          "value": "David Brown"
-                        },
-                        {
-                          "key": "EMP005",
-                          "value": "Emily Miller"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "key": "EMP006",
-                  "value": "Frank Wilson"
-                },
-                {
-                  "key": "EMP007",
-                  "value": "Grace Lee",
-                  "children": [
-                    {
-                      "key": "EMP008",
-                      "value": "Helen Harris"
-                    },
-                    {
-                      "key": "EMP009",
-                      "value": "Ivy Clark"
-                    }
-                  ]
-                },
-                {
-                  "key": "EMP010",
-                  "value": "Jack Adams"
-                },
-                {
-                  "key": "EMP011",
-                  "value": "Kevin Scott"
-                },
-                {
-                  "key": "EMP012",
-                  "value": "Laura White"
+                  "value": "nodeTwo",
+                  "key": "nodeTwo"
                 }
               ]
+            },
+            {
+              "value": "nodeThree",
+              "key": "nodeThree"
             }
           ],
-          "description": null
+          "type": "array"
         },
         {
           "name": "selectedItem",
-          "label": "Selected Item",
-          "type": "array",
-          "hidden": false,
-          "defaultValue": null,
-          "description": null
+          "type": "object"
         }
       ],
       "events": [
         "selectedItemChanged"
       ],
-      "defaultHeight": 60,
+      "defaultHeight": 5,
       "defaultWidth": 2
     },
     "ReactPdfHighlighter": {
       "name": "React Pdf Highlighter",
       "model": [
         {
-          "name": "pdfUrl",
-          "label": "Pdf Url",
-          "type": "string",
-          "hidden": false,
-          "defaultValue": "https://arxiv.org/pdf/1708.08021.pdf",
-          "description": null
+          "name": "pdfBase64",
+          "type": "string"
         },
         {
           "name": "highlights",
-          "label": "Highlights",
-          "type": "array",
-          "hidden": false,
-          "defaultValue": [],
-          "description": null
+          "type": "array"
         }
       ],
-      "events": [
-        "highlightsChanged"
-      ],
-      "defaultHeight": 100,
-      "defaultWidth": 8
+      "events": [],
+      "defaultHeight": 5,
+      "defaultWidth": 2
     },
     "RoundedBox": {
       "name": "Rounded Box",
       "model": [
         {
           "name": "headerText",
-          "label": "Header Text",
-          "type": "string",
-          "hidden": false,
-          "defaultValue": "Header",
-          "description": null
+          "type": "string"
         },
         {
           "name": "bodyText",
-          "label": "Body Text",
-          "type": "string",
-          "hidden": false,
-          "defaultValue": "Body",
-          "description": null
+          "type": "string"
         }
       ],
       "events": [],
-      "defaultHeight": 30,
+      "defaultHeight": 5,
       "defaultWidth": 2
     },
     "ChatClient": {
@@ -226,35 +142,19 @@
       "model": [
         {
           "name": "apiKey",
-          "label": "Api Key",
-          "type": "string",
-          "hidden": false,
-          "defaultValue": "dz5f4d5kzrue",
-          "description": null
+          "type": "string"
         },
         {
           "name": "userName",
-          "label": "User Name",
-          "type": "string",
-          "hidden": false,
-          "defaultValue": "shiny",
-          "description": null
+          "type": "string"
         },
         {
           "name": "userId",
-          "label": "User Id",
-          "type": "string",
-          "hidden": false,
-          "defaultValue": "shiny-king-6",
-          "description": null
+          "type": "string"
         },
         {
           "name": "userToken",
-          "label": "User Token",
-          "type": "string",
-          "hidden": false,
-          "defaultValue": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoic2hpbnkta2luZy02IiwiZXhwIjoxNzAxNzQ1Mzg0fQ.RBcITB1Z2_Iu5H3DTLHfmF4CATs1Eai23thCq4AK9sw",
-          "description": null
+          "type": "string"
         }
       ],
       "events": [],
