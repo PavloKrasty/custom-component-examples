@@ -1,110 +1,6 @@
 {
   "customComponentSupportVersion": "2",
   "components": {
-    "AgGrid": {
-      "name": "Ag Grid",
-      "model": [
-        {
-          "name": "rowData",
-          "initialValue": [
-            {
-              "make": "Toyota",
-              "model": "Celica",
-              "price": 35000
-            },
-            {
-              "make": "Ford",
-              "model": "Mondeo",
-              "price": 32000
-            },
-            {
-              "make": "Porsche",
-              "model": "Boxster",
-              "price": 72000
-            }
-          ],
-          "type": "array"
-        },
-        {
-          "name": "columnDefs",
-          "initialValue": [
-            {
-              "headerName": "Make",
-              "field": "make"
-            },
-            {
-              "headerName": "Model",
-              "field": "model"
-            },
-            {
-              "headerName": "Price",
-              "field": "price"
-            }
-          ],
-          "type": "array"
-        },
-        {
-          "name": "selectedData",
-          "inspector": "hidden",
-          "type": "string"
-        }
-      ],
-      "events": [
-        "cellClicked"
-      ],
-      "defaultHeight": 30,
-      "defaultWidth": 5
-    },
-    "MaterialInput": {
-      "name": "Material Input",
-      "model": [
-        {
-          "name": "value",
-          "type": "string"
-        },
-        {
-          "name": "placeholder",
-          "type": "string"
-        }
-      ],
-      "events": [],
-      "defaultHeight": 5,
-      "defaultWidth": 2
-    },
-    "MaterialNestedList": {
-      "name": "Material Nested List",
-      "model": [
-        {
-          "name": "data",
-          "initialValue": [
-            {
-              "value": "nodeOne",
-              "key": "nodeOne",
-              "children": [
-                {
-                  "value": "nodeTwo",
-                  "key": "nodeTwo"
-                }
-              ]
-            },
-            {
-              "value": "nodeThree",
-              "key": "nodeThree"
-            }
-          ],
-          "type": "array"
-        },
-        {
-          "name": "selectedItem",
-          "type": "object"
-        }
-      ],
-      "events": [
-        "selectedItemChanged"
-      ],
-      "defaultHeight": 5,
-      "defaultWidth": 2
-    },
     "ReactPdfHighlighter": {
       "name": "React Pdf Highlighter",
       "model": [
@@ -121,40 +17,16 @@
       "defaultHeight": 5,
       "defaultWidth": 2
     },
-    "RoundedBox": {
-      "name": "Rounded Box",
+    "ImageHighlighter": {
+      "name": "Image Highlighter",
       "model": [
         {
-          "name": "headerText",
+          "name": "base64",
           "type": "string"
         },
         {
-          "name": "bodyText",
-          "type": "string"
-        }
-      ],
-      "events": [],
-      "defaultHeight": 5,
-      "defaultWidth": 2
-    },
-    "ChatClient": {
-      "name": "Chat Client",
-      "model": [
-        {
-          "name": "apiKey",
-          "type": "string"
-        },
-        {
-          "name": "userName",
-          "type": "string"
-        },
-        {
-          "name": "userId",
-          "type": "string"
-        },
-        {
-          "name": "userToken",
-          "type": "string"
+          "name": "words",
+          "type": "array"
         }
       ],
       "events": [],

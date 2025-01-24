@@ -15,6 +15,7 @@ export const ReactPdfHighlighter = () => {
   const highlights: Highlight[] = highlightsUnparsed as Highlight[];
   const [pageCount, setPageCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [scale, setScale] = useState(1.5);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -30,8 +31,9 @@ export const ReactPdfHighlighter = () => {
 
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 1.5 });
+        const viewport = page.getViewport({ scale });
 
+        const canvasWrapper = document.createElement('div');
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
         if (!context) {
@@ -41,10 +43,10 @@ export const ReactPdfHighlighter = () => {
 
         canvas.width = viewport.width;
         canvas.height = viewport.height;
-        canvas.style.marginBottom = '16px';
         canvas.style.display = 'block';
-        canvas.style.margin = '0 auto';
-        containerRef.current.appendChild(canvas);
+
+        canvasWrapper.appendChild(canvas);
+        containerRef.current.appendChild(canvasWrapper);
 
         const renderContext = {
           canvasContext: context,
@@ -77,7 +79,7 @@ export const ReactPdfHighlighter = () => {
     }
 
     renderPdfWithHighlights();
-  }, [pdfBase64, highlights]);
+  }, [pdfBase64, highlights, scale]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -111,29 +113,58 @@ export const ReactPdfHighlighter = () => {
     }
   }, []);
 
+  const handleZoomIn = () => {
+    setScale((prevScale) => Math.min(prevScale + 0.25, 3));
+  };
+
+  const handleZoomOut = () => {
+    setScale((prevScale) => Math.max(prevScale - 0.25, 0.5));
+  };
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden' }}>
       <div style={{
         position: 'sticky',
         top: 0,
         zIndex: 1000,
-        backgroundColor: 'white',
-        textAlign: 'center',
-        fontWeight: 'bold',
-        padding: '8px 0',
-        borderBottom: '1px solid #ccc',
+        backgroundColor: '#2d2d2d',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '8px 16px',
+        borderBottom: '1px solid #444',
+        color: 'white',
       }}>
-        Page {currentPage} / {pageCount}
+        <button onClick={handleZoomOut} style={{
+          backgroundColor: 'transparent',
+          color: 'white',
+          border: '1px solid white',
+          borderRadius: '4px',
+          padding: '4px 8px',
+          cursor: 'pointer',
+          fontSize: '14px',
+          marginRight: '16px',
+        }}>-</button>
+        <span style={{ fontSize: '14px', marginRight: '16px' }}>Page {currentPage} / {pageCount}</span>
+        <span style={{ fontSize: '14px', marginRight: '16px' }}>{Math.round(scale * 100)}%</span>
+        <button onClick={handleZoomIn} style={{
+          backgroundColor: 'transparent',
+          color: 'white',
+          border: '1px solid white',
+          borderRadius: '4px',
+          padding: '4px 8px',
+          cursor: 'pointer',
+          fontSize: '14px',
+        }}>+</button>
       </div>
       <div
         ref={containerRef}
         style={{
           width: '100%',
-          height: 'calc(100vh - 40px)',
+          height: 'calc(100vh - 48px)',
           overflowY: 'auto',
           position: 'relative',
-          border: '1px solid black',
-          padding: '8px',
+          padding: '16px',
           boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'column',
