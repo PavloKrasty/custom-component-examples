@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import Konva from "konva";
 import { Retool } from "@tryretool/custom-component-support";
 
@@ -12,10 +12,11 @@ export const ImageHighlighter: React.FC = () => {
   const stageRef = useRef<Konva.Stage | null>(null);
   const layerRef = useRef<Konva.Layer | null>(null);
 
-  // Получение данных из Retool
   const [base64] = Retool.useStateString({ name: "base64" });
   const [rawWords] = Retool.useStateArray({ name: "words" });
   const words: Word[] = Array.isArray(rawWords) ? (rawWords as Word[]) : [];
+
+  const [zoomPercent, setZoomPercent] = useState(100); // Для отображения процента масштаба
 
   useEffect(() => {
     if (!base64 || !stageRef.current || !layerRef.current) return;
@@ -50,11 +51,10 @@ export const ImageHighlighter: React.FC = () => {
       stage.width(containerWidth);
       stage.height(containerHeight);
 
-      // Создаем группу для изображения и обводок
       const group = new Konva.Group({
         x: offsetX,
         y: offsetY,
-        draggable: true, // Делаем группу draggable
+        draggable: true,
       });
 
       const konvaImage = new Konva.Image({
@@ -113,6 +113,8 @@ export const ImageHighlighter: React.FC = () => {
 
     stage.position(newPosition);
     stage.batchDraw();
+
+    setZoomPercent(Math.round(newScale * 100)); // Обновляем процент масштаба
   };
 
   return (
@@ -149,22 +151,38 @@ export const ImageHighlighter: React.FC = () => {
           right: "10px",
           display: "flex",
           gap: "10px",
+          backgroundColor: "#f2f2f2",
+          padding: "8px",
+          borderRadius: "8px",
+          boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)",
+          alignItems: "center",
         }}
       >
         <img
           src="https://www.svgrepo.com/show/393135/loop-plus.svg"
           alt="Zoom In"
           onClick={() => handleZoom(true)}
-          style={{ cursor: "pointer", width: "30px", height: "30px" }}
+          style={{
+            cursor: "pointer",
+            width: "30px",
+            height: "30px",
+          }}
         />
+        <span style={{ fontSize: "16px", fontWeight: "bold", color: "#333" }}>
+          {zoomPercent}%
+        </span>
         <img
           src="https://www.svgrepo.com/show/393133/loop-minus.svg"
           alt="Zoom Out"
           onClick={() => handleZoom(false)}
-          style={{ cursor: "pointer", width: "30px", height: "30px" }}
+          style={{
+            cursor: "pointer",
+            width: "30px",
+            height: "30px",
+          }}
         />
       </div>
     </div>
   );
 };
-    
+  
